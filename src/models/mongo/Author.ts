@@ -42,7 +42,7 @@ export interface IAuthor {
   password: string;
   name: string;
   country: string;
-  profileImage: string;
+  profileImage?: string;
   books?: IBook[];
 }
 

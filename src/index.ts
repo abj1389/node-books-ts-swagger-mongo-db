@@ -11,7 +11,7 @@ import swaggerUiExpress from "swagger-ui-express";
 
 // Configuración del app
 const PORT = 3000;
-const app = express();
+export const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors({ origin: "http://localhost:3000" }));
@@ -70,8 +70,6 @@ app.use((err: ErrorRequestHandler, req: Request, res: Response, next: NextFuncti
   }
 });
 
-app.listen(PORT, () => {
+export const server = app.listen(PORT, () => {
   console.log(`app levantado en el puerto ${PORT}`);
 });
-
-module.exports = app;

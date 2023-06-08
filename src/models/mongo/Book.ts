@@ -37,7 +37,7 @@ const Schema = mongoose.Schema;
 // Creamos la interface
 export interface IBook {
   title: string;
-  author: ObjectId;
+  author?: ObjectId;
   pages: number;
   publisher: {
     name: string;
