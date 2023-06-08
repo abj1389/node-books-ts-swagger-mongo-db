@@ -1,3 +1,10 @@
+/**
+ * @swagger
+ * tags:
+ *   name: Book
+ *   description: The books managing API
+ */
+
 import express, { type NextFunction, type Response, type Request } from "express";
 
 // Modelos
@@ -28,7 +35,42 @@ bookRouter.get("/", (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-// CRUD: READ
+/**
+ * @swagger
+ * /book:
+ *   get:
+ *     summary: Obtener lista de libros con paginación
+ *     description: Obtiene una lista de libros con paginación.
+ *     tags: [Book]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         description: Número de página.
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         description: Límite de resultados por página.
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: Lista de libros obtenida exitosamente. Devuelve información de paginación y los libros.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Book'
+ *                 pagination:
+ *                   $ref: '#/components/schemas/Pagination'
+ */
+
 bookRouter.get("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { page, limit }: any = req.query;
@@ -40,9 +82,11 @@ bookRouter.get("/", async (req: Request, res: Response, next: NextFunction) => {
     // Número total de elementos
     const totalElements = await Book.countDocuments();
     const response = {
-      totalItems: totalElements,
-      totalPages: Math.ceil(totalElements / limit),
-      currentPage: page,
+      pagination: {
+        totalItems: totalElements,
+        totalPages: Math.ceil(totalElements / limit),
+        currentPage: page,
+      },
       data: books,
     };
     res.json(response);
@@ -51,7 +95,35 @@ bookRouter.get("/", async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-// CRUD: READ
+/**
+ * @swagger
+ * /book/{id}:
+ *   get:
+ *     summary: Obtener libro por ID
+ *     description: Obtiene un libro según su ID.
+ *     tags: [Book]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         description: ID del libro.
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Libro encontrado. Devuelve los detalles del libro.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Book'
+ *       404:
+ *         description: Libro no encontrado. No se encontró ningún libro con el ID proporcionado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
 bookRouter.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id;
@@ -59,12 +131,41 @@ bookRouter.get("/:id", async (req: Request, res: Response, next: NextFunction) =
     if (book) {
       res.json(book);
     } else {
-      res.status(404).json({});
+      res.status(404).json({ error: "Libro no encontrado." });
     }
   } catch (error) {
     next(error);
   }
 });
+
+/**
+ * @swagger
+ * /book/title/{title}:
+ *   get:
+ *     summary: Buscar libro por título
+ *     description: Busca un libro según su título.
+ *     tags: [Book]
+ *     parameters:
+ *       - in: path
+ *         name: title
+ *         description: Título del libro.
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Libro encontrado. Devuelve los detalles del libro.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Book'
+ *       404:
+ *         description: Libro no encontrado. No se encontró ningún libro con el título proporcionado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 
 bookRouter.get("/title/:title", async (req: Request, res: Response, next: NextFunction) => {
   const title = req.params.title;
@@ -74,14 +175,36 @@ bookRouter.get("/title/:title", async (req: Request, res: Response, next: NextFu
     if (book?.length) {
       res.json(book);
     } else {
-      res.status(404).json([]);
+      res.status(404).json({ error: "Libro no encontrado." });
     }
   } catch (error) {
     next(error);
   }
 });
 
-// CRUD: CREATE
+/**
+ * @swagger
+ * /book:
+ *   post:
+ *     summary: Crear libro
+ *     description: Crea un nuevo libro.
+ *     tags: [Book]
+ *     requestBody:
+ *       required: true
+ *       description: Datos del libro a crear.
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Book'
+ *     responses:
+ *       201:
+ *         description: Libro creado exitosamente. Devuelve los detalles del libro creado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Book'
+ */
+
 bookRouter.post("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const book = new Book(req.body);
@@ -93,7 +216,35 @@ bookRouter.post("/", async (req: Request, res: Response, next: NextFunction) => 
   }
 });
 
-// CRUD: DELETE
+/**
+ * @swagger
+ * /book/{id}:
+ *   delete:
+ *     summary: Eliminar libro
+ *     description: Elimina un libro según su ID.
+ *     tags: [Book]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         description: ID del libro.
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Libro eliminado exitosamente. Devuelve los detalles del libro eliminado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Book'
+ *       404:
+ *         description: Libro no encontrado. No se encontró ningún libro con el ID proporcionado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
 bookRouter.delete("/:id", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id;
@@ -101,14 +252,49 @@ bookRouter.delete("/:id", async (req: Request, res: Response, next: NextFunction
     if (bookDeleted) {
       res.json(bookDeleted);
     } else {
-      res.status(404).json({});
+      res.status(404).json({ error: "Libro no encontrado." });
     }
   } catch (error) {
     next(error);
   }
 });
 
-// CRUD: UPDATE
+/**
+ * @swagger
+ * /book/{id}:
+ *   put:
+ *     summary: Actualizar libro
+ *     description: Actualiza un libro según su ID.
+ *     tags: [Book]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         description: ID del libro.
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       description: Datos actualizados del libro.
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Book'
+ *     responses:
+ *       200:
+ *         description: Libro actualizado exitosamente. Devuelve los detalles del libro actualizado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Book'
+ *       404:
+ *         description: Libro no encontrado. No se encontró ningún libro con el ID proporcionado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
 bookRouter.put("/:id", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id;
@@ -116,7 +302,7 @@ bookRouter.put("/:id", async (req: Request, res: Response, next: NextFunction) =
     if (bookUpdated) {
       res.json(bookUpdated);
     } else {
-      res.status(404).json({});
+      res.status(404).json({ error: "Libro no encontrado." });
     }
   } catch (error) {
     next(error);

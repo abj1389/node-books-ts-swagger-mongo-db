@@ -1,3 +1,10 @@
+/**
+ * @swagger
+ * tags:
+ *   name: Author
+ *   description: The authors managing API
+ */
+
 import { generateToken } from "../utils/token";
 import { isAuth } from "../middlewares/auth.middleware";
 import { Author } from "../models/mongo/Author";
@@ -11,10 +18,9 @@ const upload = multer({ dest: "public" });
 // Router propio de libros
 export const authorRouter = express.Router();
 
-// Middleware de paginación
 authorRouter.get("/", (req: Request, res: Response, next: NextFunction) => {
   try {
-    console.log("Estamos en el middleware /car que comprueba parámetros");
+    console.log("Estamos en el middleware /author que comprueba parámetros");
 
     const page: number = req.query.page ? parseInt(req.query.page as string) : 1;
     const limit: number = req.query.limit ? parseInt(req.query.limit as string) : 10;
@@ -33,7 +39,40 @@ authorRouter.get("/", (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-// CRUD: READ
+/**
+ * @swagger
+ * /author:
+ *   get:
+ *     summary: Lists all the authors
+ *     tags: [Author]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         description: Número de página.
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         description: Límite de resultados por página.
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: The list of the authors
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Author'
+ *                 pagination:
+ *                   $ref: '#/components/schemas/Pagination'
+ */
 authorRouter.get("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { page, limit }: any = req.query;
@@ -44,9 +83,11 @@ authorRouter.get("/", async (req: Request, res: Response, next: NextFunction) =>
     // Número total de elementos
     const totalElements = await Author.countDocuments();
     const response = {
-      totalItems: totalElements,
-      totalPages: Math.ceil(totalElements / limit),
-      currentPage: page,
+      pagination: {
+        totalItems: totalElements,
+        totalPages: Math.ceil(totalElements / limit),
+        currentPage: page,
+      },
       data: authors,
     };
     res.json(response);
@@ -55,7 +96,34 @@ authorRouter.get("/", async (req: Request, res: Response, next: NextFunction) =>
   }
 });
 
-// CRUD: READ
+/**
+ * @swagger
+ * /author/{id}:
+ *   get:
+ *     summary: Get author by ID
+ *     tags: [Author]
+ *     description: Retrieves detailed information about an author based on their ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         description: ID of the author to retrieve.
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Author found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Author'
+ *       404:
+ *         description: No author found with the specified ID.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 authorRouter.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id;
@@ -71,12 +139,43 @@ authorRouter.get("/:id", async (req: Request, res: Response, next: NextFunction)
 
       res.json(temporalAuthor);
     } else {
-      res.status(404).json({});
+      res.status(404).json({ error: "Autor no encontrado" });
     }
   } catch (error) {
     next(error);
   }
 });
+
+/**
+ * @swagger
+ * /author/name/{name}:
+ *   get:
+ *     summary: Obtener autores por nombre
+ *     tags: [Author]
+ *     description: Obtiene una lista de autores que coinciden con el nombre proporcionado.
+ *     parameters:
+ *       - name: name
+ *         in: path
+ *         description: Nombre para filtrar los autores.
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Lista de autores encontrados.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/IAuthor'
+ *       404:
+ *         description: No se encontraron autores que coincidan con el nombre proporcionado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 
 authorRouter.get("/name/:name", async (req: Request, res: Response, next: NextFunction) => {
   const name = req.params.name;
@@ -86,14 +185,57 @@ authorRouter.get("/name/:name", async (req: Request, res: Response, next: NextFu
     if (author?.length) {
       res.json(author);
     } else {
-      res.status(404).json([]);
+      res.status(404).json({ error: "No se encontraron autores que coincidan con el nombre proporcionado" });
     }
   } catch (error) {
     next(error);
   }
 });
 
-// LOGIN DE AUTORES
+/**
+ * @swagger
+ * /author/login:
+ *   post:
+ *     summary: Iniciar sesión de autor
+ *     tags: [Author]
+ *     description: Inicia sesión de un autor utilizando su dirección de correo electrónico y contraseña.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: Dirección de correo electrónico del autor.
+ *               password:
+ *                 type: string
+ *                 description: Contraseña del autor.
+ *     responses:
+ *       200:
+ *         description: Inicio de sesión exitoso. Se devuelve un token JWT.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *       400:
+ *         description: Error de solicitud. No se especificaron los campos de correo electrónico y contraseña.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Error de autenticación. El correo electrónico y/o la contraseña son incorrectos.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
 authorRouter.post("/login", async (req: Request, res: Response, next: NextFunction) => {
   try {
     // const email = req.body.email;
@@ -130,7 +272,28 @@ authorRouter.post("/login", async (req: Request, res: Response, next: NextFuncti
   }
 });
 
-// CRUD: CREATE
+/**
+ * @swagger
+ * /author:
+ *   post:
+ *     summary: Crear autor
+ *     tags: [Author]
+ *     description: Crea un nuevo autor con la información proporcionada.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Author'
+ *     responses:
+ *       201:
+ *         description: Autor creado exitosamente. Devuelve los detalles del autor creado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Author'
+ */
+
 authorRouter.post("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const author = new Author(req.body);
@@ -142,7 +305,43 @@ authorRouter.post("/", async (req: Request, res: Response, next: NextFunction) =
   }
 });
 
-// CRUD: DELETE
+/**
+ * @swagger
+ * /author/{id}:
+ *   delete:
+ *     summary: Eliminar autor
+ *     tags: [Author]
+ *     description: Elimina un autor existente según el ID proporcionado.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del autor a eliminar.
+ *         schema:
+ *           type: string
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Autor eliminado exitosamente. Devuelve los detalles del autor eliminado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Author'
+ *       401:
+ *         description: No autorizado. El usuario no tiene permisos para realizar esta operación.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Autor no encontrado. No se encontró ningún autor con el ID proporcionado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
 authorRouter.delete("/:id", isAuth, async (req: any, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id;
@@ -155,14 +354,57 @@ authorRouter.delete("/:id", isAuth, async (req: any, res: Response, next: NextFu
     if (authorDeleted) {
       res.json(authorDeleted);
     } else {
-      res.status(404).json({});
+      res.status(404).json({ error: "Autor no encontrado" });
     }
   } catch (error) {
     next(error);
   }
 });
 
-// CRUD: UPDATE
+/**
+ * @swagger
+ * /author/{id}:
+ *   put:
+ *     summary: Actualizar autor
+ *     tags: [Author]
+ *     description: Actualiza un autor existente según el ID proporcionado.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del autor a actualizar.
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       description: Datos del autor a actualizar.
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Author'
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Autor actualizado exitosamente. Devuelve los detalles del autor actualizado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Author'
+ *       401:
+ *         description: No autorizado. El usuario no tiene permisos para realizar esta operación.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Autor no encontrado. No se encontró ningún autor con el ID proporcionado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
 authorRouter.put("/:id", isAuth, async (req: any, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id;
@@ -180,12 +422,47 @@ authorRouter.put("/:id", isAuth, async (req: any, res: Response, next: NextFunct
       delete authorToSend.password;
       res.json(authorToSend);
     } else {
-      res.status(404).json({});
+      res.status(404).json({ error: "Autor no encontrado." });
     }
   } catch (error) {
     next(error);
   }
 });
+
+/**
+ * @swagger
+ * /author/logo-upload:
+ *   post:
+ *     summary: Cargar logo de autor
+ *     tags: [Author]
+ *     description: Carga el logo de un autor.
+ *     requestBody:
+ *       required: true
+ *       description: Archivo de imagen del logo a cargar.
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               logo:
+ *                 type: string
+ *                 format: binary
+ *             required:
+ *               - logo
+ *     responses:
+ *       200:
+ *         description: Logo cargado exitosamente. Devuelve los detalles del autor actualizado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Author'
+ *       404:
+ *         description: Autor no encontrado. No se encontró ningún autor con el ID proporcionado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 
 authorRouter.post("/logo-upload", upload.single("logo"), async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -207,7 +484,7 @@ authorRouter.post("/logo-upload", upload.single("logo"), async (req: Request, re
       console.log("Autor modificado correctamente!");
     } else {
       fs.unlinkSync(newPath);
-      res.status(404).send("Autor no encontrado");
+      res.status(404).send({ error: "Autor no encontrado." });
     }
   } catch (error) {
     next(error);

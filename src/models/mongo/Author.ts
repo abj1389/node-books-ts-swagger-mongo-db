@@ -1,3 +1,34 @@
+/**
+ * @swagger
+ * definitions:
+ *   Author:
+ *     type: object
+ *     properties:
+ *       _id:
+ *         type: string
+ *         example: 60bdfe8c12b724001fcd4c68
+ *       email:
+ *         type: string
+ *         example: example@example.com
+ *       name:
+ *         type: string
+ *         example: John Doe
+ *       country:
+ *         type: string
+ *         example: COLOMBIA
+ *       profileImage:
+ *         type: string
+ *         example: https://example.com/profile.jpg
+ *       createdAt:
+ *         type: string
+ *         format: date-time
+ *         example: 2023-06-07T10:30:00Z
+ *       updatedAt:
+ *         type: string
+ *         format: date-time
+ *         example: 2023-06-07T11:15:00Z
+ */
+
 import mongoose from "mongoose";
 import validator from "validator";
 import bcrypt from "bcrypt";

@@ -1,3 +1,32 @@
+/**
+ * @swagger
+ * definitions:
+ *   Book:
+ *     type: object
+ *     properties:
+ *       _id:
+ *         type: string
+ *         example: 60bdfe8c12b724001fcd4c68
+ *       title:
+ *         type: string
+ *         example: The Great Gatsby
+ *       author:
+ *         type: string
+ *         example: 60bdfe8c12b724001fcd4c68
+ *       pages:
+ *         type: number
+ *         example: 300
+ *       publisher:
+ *         type: object
+ *         properties:
+ *           name:
+ *             type: string
+ *             example: Penguin Random House
+ *           country:
+ *             type: string
+ *             example: United States
+ */
+
 import mongoose, { type ObjectId } from "mongoose";
 const Schema = mongoose.Schema;
 
