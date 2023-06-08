@@ -1,5 +1,5 @@
 {
-  "name": "node-books-ts-swagger-mongoDB",
+  "name": "node-books-ts-swagger-mongo-db",
   "version": "1.0.0",
   "description": "Hola este es el repo de node-books-ts-swagger-mongoDB",
   "main": "index.ts",

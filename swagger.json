@@ -1,0 +1,139 @@
+{
+  "openapi": "3.0.0",
+  "info": { "title": "Node S15", "version": "1.0.0", "description": "This is a simple CRUD API", "license": { "name": "MIT", "url": "http://mit.com" }, "contact": { "name": "Alex Brasoveanu", "url": "https://github.com/abj1389", "email": "alex@example.com" } },
+  "server": [{ "url": "http://localhost:3000" }],
+  "paths": {
+    "/author": {
+      "get": {
+        "summary": "Lists all the authors",
+        "tags": ["Author"],
+        "parameters": [
+          { "in": "query", "name": "page", "description": "Número de página.", "schema": { "type": "integer", "default": 1 } },
+          { "in": "query", "name": "limit", "description": "Límite de resultados por página.", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": { "200": { "description": "The list of the authors", "content": { "application/json": { "schema": { "type": "object", "properties": { "data": { "type": "array", "items": { "$ref": "#/components/schemas/Author" } }, "pagination": { "$ref": "#/components/schemas/Pagination" } } } } } } }
+      },
+      "post": { "summary": "Crear autor", "tags": ["Author"], "description": "Crea un nuevo autor con la información proporcionada.", "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Author" } } } }, "responses": { "201": { "description": "Autor creado exitosamente. Devuelve los detalles del autor creado.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Author" } } } } } }
+    },
+    "/author/{id}": {
+      "get": {
+        "summary": "Get author by ID",
+        "tags": ["Author"],
+        "description": "Retrieves detailed information about an author based on their ID.",
+        "parameters": [{ "in": "path", "name": "id", "description": "ID of the author to retrieve.", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Author found.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Author" } } } }, "404": { "description": "No author found with the specified ID.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } } }
+      },
+      "delete": {
+        "summary": "Eliminar autor",
+        "tags": ["Author"],
+        "description": "Elimina un autor existente según el ID proporcionado.",
+        "parameters": [{ "in": "path", "name": "id", "required": true, "description": "ID del autor a eliminar.", "schema": { "type": "string" } }],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Autor eliminado exitosamente. Devuelve los detalles del autor eliminado.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Author" } } } },
+          "401": { "description": "No autorizado. El usuario no tiene permisos para realizar esta operación.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "404": { "description": "Autor no encontrado. No se encontró ningún autor con el ID proporcionado.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      },
+      "put": {
+        "summary": "Actualizar autor",
+        "tags": ["Author"],
+        "description": "Actualiza un autor existente según el ID proporcionado.",
+        "parameters": [{ "in": "path", "name": "id", "required": true, "description": "ID del autor a actualizar.", "schema": { "type": "string" } }],
+        "requestBody": { "required": true, "description": "Datos del autor a actualizar.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Author" } } } },
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Autor actualizado exitosamente. Devuelve los detalles del autor actualizado.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Author" } } } },
+          "401": { "description": "No autorizado. El usuario no tiene permisos para realizar esta operación.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "404": { "description": "Autor no encontrado. No se encontró ningún autor con el ID proporcionado.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/author/name/{name}": {
+      "get": {
+        "summary": "Obtener autores por nombre",
+        "tags": ["Author"],
+        "description": "Obtiene una lista de autores que coinciden con el nombre proporcionado.",
+        "parameters": [{ "name": "name", "in": "path", "description": "Nombre para filtrar los autores.", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Lista de autores encontrados.", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/IAuthor" } } } } }, "404": { "description": "No se encontraron autores que coincidan con el nombre proporcionado.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } } }
+      }
+    },
+    "/author/login": {
+      "post": {
+        "summary": "Iniciar sesión de autor",
+        "tags": ["Author"],
+        "description": "Inicia sesión de un autor utilizando su dirección de correo electrónico y contraseña.",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "properties": { "email": { "type": "string", "description": "Dirección de correo electrónico del autor." }, "password": { "type": "string", "description": "Contraseña del autor." } } } } } },
+        "responses": {
+          "200": { "description": "Inicio de sesión exitoso. Se devuelve un token JWT.", "content": { "application/json": { "schema": { "type": "object", "properties": { "token": { "type": "string" } } } } } },
+          "400": { "description": "Error de solicitud. No se especificaron los campos de correo electrónico y contraseña.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "401": { "description": "Error de autenticación. El correo electrónico y/o la contraseña son incorrectos.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/author/logo-upload": {
+      "post": {
+        "summary": "Cargar logo de autor",
+        "tags": ["Author"],
+        "description": "Carga el logo de un autor.",
+        "requestBody": { "required": true, "description": "Archivo de imagen del logo a cargar.", "content": { "multipart/form-data": { "schema": { "type": "object", "properties": { "logo": { "type": "string", "format": "binary" } }, "required": ["logo"] } } } },
+        "responses": { "200": { "description": "Logo cargado exitosamente. Devuelve los detalles del autor actualizado.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Author" } } } }, "404": { "description": "Autor no encontrado. No se encontró ningún autor con el ID proporcionado.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } } }
+      }
+    },
+    "/book": {
+      "get": {
+        "summary": "Obtener lista de libros con paginación",
+        "description": "Obtiene una lista de libros con paginación.",
+        "tags": ["Book"],
+        "parameters": [
+          { "in": "query", "name": "page", "description": "Número de página.", "schema": { "type": "integer", "default": 1 } },
+          { "in": "query", "name": "limit", "description": "Límite de resultados por página.", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": { "200": { "description": "Lista de libros obtenida exitosamente. Devuelve información de paginación y los libros.", "content": { "application/json": { "schema": { "type": "object", "properties": { "data": { "type": "array", "items": { "$ref": "#/components/schemas/Book" } }, "pagination": { "$ref": "#/components/schemas/Pagination" } } } } } } }
+      },
+      "post": { "summary": "Crear libro", "description": "Crea un nuevo libro.", "tags": ["Book"], "requestBody": { "required": true, "description": "Datos del libro a crear.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Book" } } } }, "responses": { "201": { "description": "Libro creado exitosamente. Devuelve los detalles del libro creado.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Book" } } } } } }
+    },
+    "/book/{id}": {
+      "get": {
+        "summary": "Obtener libro por ID",
+        "description": "Obtiene un libro según su ID.",
+        "tags": ["Book"],
+        "parameters": [{ "in": "path", "name": "id", "description": "ID del libro.", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Libro encontrado. Devuelve los detalles del libro.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Book" } } } }, "404": { "description": "Libro no encontrado. No se encontró ningún libro con el ID proporcionado.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } } }
+      },
+      "delete": {
+        "summary": "Eliminar libro",
+        "description": "Elimina un libro según su ID.",
+        "tags": ["Book"],
+        "parameters": [{ "in": "path", "name": "id", "description": "ID del libro.", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Libro eliminado exitosamente. Devuelve los detalles del libro eliminado.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Book" } } } }, "404": { "description": "Libro no encontrado. No se encontró ningún libro con el ID proporcionado.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } } }
+      },
+      "put": {
+        "summary": "Actualizar libro",
+        "description": "Actualiza un libro según su ID.",
+        "tags": ["Book"],
+        "parameters": [{ "in": "path", "name": "id", "description": "ID del libro.", "required": true, "schema": { "type": "string" } }],
+        "requestBody": { "required": true, "description": "Datos actualizados del libro.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Book" } } } },
+        "responses": { "200": { "description": "Libro actualizado exitosamente. Devuelve los detalles del libro actualizado.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Book" } } } }, "404": { "description": "Libro no encontrado. No se encontró ningún libro con el ID proporcionado.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } } }
+      }
+    },
+    "/book/title/{title}": {
+      "get": {
+        "summary": "Buscar libro por título",
+        "description": "Busca un libro según su título.",
+        "tags": ["Book"],
+        "parameters": [{ "in": "path", "name": "title", "description": "Título del libro.", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Libro encontrado. Devuelve los detalles del libro.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Book" } } } }, "404": { "description": "Libro no encontrado. No se encontró ningún libro con el título proporcionado.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } } }
+      }
+    }
+  },
+  "definitions": {
+    "Author": { "type": "object", "properties": { "_id": { "type": "string", "example": "60bdfe8c12b724001fcd4c68" }, "email": { "type": "string", "example": "example@example.com" }, "name": { "type": "string", "example": "John Doe" }, "country": { "type": "string", "example": "COLOMBIA" }, "profileImage": { "type": "string", "example": "https://example.com/profile.jpg" }, "createdAt": { "type": "string", "format": "date-time", "example": "2023-06-07T10:30:00Z" }, "updatedAt": { "type": "string", "format": "date-time", "example": "2023-06-07T11:15:00Z" } } },
+    "Book": { "type": "object", "properties": { "_id": { "type": "string", "example": "60bdfe8c12b724001fcd4c68" }, "title": { "type": "string", "example": "The Great Gatsby" }, "author": { "type": "string", "example": "60bdfe8c12b724001fcd4c68" }, "pages": { "type": "number", "example": 300 }, "publisher": { "type": "object", "properties": { "name": { "type": "string", "example": "Penguin Random House" }, "country": { "type": "string", "example": "United States" } } } } }
+  },
+  "components": { "schemas": { "Error": { "type": "object", "properties": { "error": { "type": "string", "description": "The error message" } } }, "Pagination": { "type": "object", "properties": { "totalItems": { "type": "number", "description": "Total items on this endpoint" }, "totalPages": { "type": "number", "description": "Number of pages for this pagination" }, "currentPage": { "type": "number", "description": "Current page showed" } } } } },
+  "tags": [
+    { "name": "Author", "description": "The authors managing API" },
+    { "name": "Book", "description": "The books managing API" }
+  ]
+}
