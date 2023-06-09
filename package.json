@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "test": "cross-env DB_NAME=NODE-S16-TESTING-DB jest --silent",
+    "test": "cross-env DB_NAME=NODE-S16-TESTING-DB jest --silent --maxWorkers=1",
     "prepare": "husky install",
     "seed:books": "node ./dist/seeds/book.seed.js",
     "seed:authors": "node ./dist/seeds/author.seed.js",
